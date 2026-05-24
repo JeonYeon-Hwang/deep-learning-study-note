@@ -38,7 +38,7 @@ ReLU 함수 그래프: 직선인데 특정 임계에서 빗면 형태로 상승
 <br>
 
 **ch. 4** 
-→ 신경망 학습론  
+→ 신경망 학습론: 데이터 주도.. 이미지들의 특징을 추출해 학습  
 <br>
 
 **ch. 5** 
@@ -47,4 +47,14 @@ ReLU 함수 그래프: 직선인데 특정 임계에서 빗면 형태로 상승
 <br>
 
 여기서 advanced 하여 점핑(개념은 다소 독립적)인 내용으로는..  
-합성곱 신경망(CNN)과 딥러닝이 있다.
+합성곱 신경망(CNN)과 딥러닝이 있다.  
+<br>
+
+명령어 기록:
+```
+rm -rf mnist-lab-personal
+git clone https://github.com/JeonYeon-Hwang/mnist-lab-personal.git
+pip install -r requirements.txt
+cd mnist-lab-personal
+pytest tests/test_테스트 명.py -v
+```
