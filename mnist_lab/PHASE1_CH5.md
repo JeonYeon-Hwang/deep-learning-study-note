@@ -1,8 +1,4 @@
-## Phase_1: ReLU 구현하기  
-구현을 진행한 이후 `pytest tests/test_relu.py -v`로 합불여부를 판단한다  
-<br>
-
-### ch. 5 중심으로 학습하기
+## ch. 5 중심으로 학습하기  
 책의 ch. 5의 초창기 부분에 있다. 계산 그래프로.. 각 노드를 기준으로 순차적 연산 진행.  
 이 계산 그래프를 **역순**.. 즉, "역전파"로 바꾸면, 각 단계에서 특정 정보값을 추출할 수 있다. 
 
@@ -119,15 +115,60 @@ affien_backward 구현 요약:
 다음과 같은 변화량(미분값)을 구해야 한다.. dw = W곱한 변화량, db = B를 더한 변화량  
 너무 난해하다.. 일단 구현 식을 표현하고 이해한 것을 기술해보자:  
 
-$\frac{\partial L}{\partial W}$ = np.dot(self.x.T, dout) .. $dw$를 나타냄  
+$\frac{\partial L}{\partial W}$ = np.dot(self.x.T, dout) .. $dw$를 나타냄 
+→ 행렬 x의 역에 dout를 곱하면 dw가 나온다.  
 
 $\frac{\partial L}{\partial B}$ = np.sum(dout, axis=0) .. $db$를 나타냄  
+→ 더하는 요소라 좀 다르다: 더하기 미분은 그냥 1이기 때문..  
+→ 왜 그런 지 모르겠지만(axis=0).. 즉, 세로로 요소의 합을 한 것이 db라고 함.  
 
 $\frac{\partial L}{\partial X}$ = np.dot(dout, self.W.T) .. $dx$를 나타냄  
 → 여기서 .T는 행렬 W를 뒤집는다는 것을 의미.  
+→ dout에 가중치 행렬 W를 뒤집어 곱하면 dx가 나온다.  
+<br>
 
+### cross_entropy_loss 구현하기  
+역전파의 dout가 최초로 생성되어 출발하는 **시작점**이다.  
+모델이 예측한 값(`y_pred`)와 실제 정답(`y_true`)와 비교를 통해 **최종 오차 점수(L)**을 구함.  
+계층의 흐름을 도식화하면 다음과 같다:  
+```
+[입력층]               [은닉층 반복]       [출력층]       [손실 함수]
+ 픽셀 값 🡢 [Affine] 🡢 [ReLU] 🡢 ... 🡢 [Softmax] 🡢 [Cross Entropy]
+  (X)                                   (y_pred)          │
+                                                          ▼
+[입력층]               [은닉층 반복]                 정답지(y_true)와 비교    
+  [dx]  🡠 [Backward] 🡠 [Backward] 🡠 [Backward] 🡠   [최초 dout]      
+```
+<br>
 
+**오차 점수(L) 구하기**  
+여기서는 오차 점수를 구하고 반환하는 계층이다. 순서를 말하자면 다음과 같다:  
+1. 확률 행렬(y_pred: 각 행이 하나의 답)과 정답 레이블(y_true: 하나가 한 행의 답 index)  
+2. 정답 위치만 골라낸 다음(np.arange 사용) → 새 배열로 만들어 내기  
+3. 안전장지(np.clip 걸기).. 왜? → 얘를 log화 할 것인데, 0의 경우 -\(\infty \)가 되기 때문  
+4. 로그에 집어넣어 점수 변환하기: 1이하이므로 변환된 점수는 무조건 음수  
+5. 이들을 합산 및 양수화, 그리고 bach size 만큼 나눈 것이 → 오차 점수가 된다  
+<br>
 
+**코드로 구현하기**  
+```
+batch_size = y_pred.shape[0] => 전체 행의 갯수를 의미
 
+answer_probs = y_pred[행 좌표, 열 좌표] 
+=> 행: np.arange로 0, 1, 2 .. size만큼  
+=> 열: y_true를 기준으로 함
 
+log_probs = np.log(np.clip(answer_probs, 1e-7, 1.0))
+=> log 하면 바로 변환되나, clip로 한계 설정  
+=> 한계선은 1e-7에서.. 1.0 사이까지
 
+sum_probs = log_probs의 값을 모두 더하고
+return sum_probs을 batch_size 만큼 뺀다
+```
+<br>
+
+트레이닝 결과:
+```
+Test Accuracy: 98.43%
+Total Params: 537,354
+```
