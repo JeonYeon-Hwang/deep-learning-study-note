@@ -88,3 +88,10 @@ Train 함수 수행 순서는 다음과 같은 주기를 반복한다:
    이를 통해 전체 gradient가 생성됨.  
 
 이후에는.. gradient기반 수정 → 이를 기록하는 로직이다.
+<br>
+
+트레이닝 결과:
+```
+Test Accuracy: 98.43%
+Total Params: 537,354
+```

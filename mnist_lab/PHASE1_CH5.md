@@ -165,10 +165,3 @@ log_probs = np.log(np.clip(answer_probs, 1e-7, 1.0))
 sum_probs = log_probs의 값을 모두 더하고
 return sum_probs을 batch_size 만큼 뺀다
 ```
-<br>
-
-트레이닝 결과:
-```
-Test Accuracy: 98.43%
-Total Params: 537,354
-```
