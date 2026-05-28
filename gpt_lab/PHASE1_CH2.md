@@ -14,7 +14,7 @@
 
 *BPE 토크나이저*  
 단순한 통계적 계산을 통해 단어사전을 만든다: BPE merge token  
-대략적인 구현 방식은 다음과 같다:
+대략적인 구현 방식은 다음과 같다:  
 반복문: token pair 생성(내부 반복) → max pair 선정 → 해당 pair 기준 dict 갱신  
 → 임시 new squence 생성 → 변경된 id를 new squence에 반영(내부 반복)  
 탈출조건은 두 가지다: 1. vocab size가 채워질 경우 2. sequence가 소진되었을 경우  
@@ -43,7 +43,7 @@ context length가 n 이라면 다음과 같은 쌍이 map에 형성된다:
 ```
 즉, length가 길 수록, 장문의 문맥에 대한 예측이 높아진다. 또한, stride가 작을(촘촘할)  
 수록, context 단위를 적게 띄워서 쌍을 map에 만듦.. 다만, 성능과 연산량은 trade off이니 주의!  
-Dataset: 무엇을 가져올 지 정의(낱개).. why? → class로 추후 `__getitem__`호출로 각각 생성
+Dataset: 무엇을 가져올 지 정의(낱개).. why? → class로 추후 `__getitem__`호출로 각각 생성  
 DataLoader: 데이터 묶음(Batch)을 병렬적로 GPU에 던져줌
 <br>
 
@@ -64,10 +64,10 @@ position_embedding 행렬: context_length 만큼 행을 가짐 → 매 새 conte
 
 *forward 구현하기*  
 forward에선 "이미 산출된(무작위)" 단어들의 위치값과 고유값을 더한다: 무슨 의미가 있나?  
-초기엔 의미 無!.. 오차 점수 기반 학습하여 의미있는 값들로 변함 
+초기엔 의미 無!.. 오차 점수 기반 학습하여 의미있는 값들로 변함  
 for문 같은 순차적 방식 No, Vectorization(백터화)로 한꺼번에 연산 진행   
 
-**간소한 trouble shooting**
+**간소한 trouble shooting**  
 `token_extracted + position_extracted`로직에서 다음과 같은 에러 발생:  
 <span style="color:red">The size of tensor a (8) must match the size of tensor b..</span>  
 
