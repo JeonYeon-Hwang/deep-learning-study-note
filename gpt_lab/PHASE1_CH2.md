@@ -51,5 +51,28 @@ DataLoader: 데이터 묶음(Batch)을 병렬적로 GPU에 던져줌
 
 *구현되는 순서는?*  
 총 토큰의 갯수 × 임베딩 차원 수 → 거대한 "랜덤값" 행렬이 생성  
-이 각 cell의 값은 = 토큰 임베딩 + 포지셔널 임베딩(단어의 위치).. 합으로 이루어진다  
+이 각 cell의 (임시) 값은 = 토큰 임베딩 + 포지셔널 임베딩(단어의 위치).. 합으로 이루어진다  
 왜 합하였는데 별도의 정보가 남나?.. 직교(Orthogonal)이라는 개념이 작용한다고..  
+
+왜 임시 값인가? → 토큰 임베딩(고정값) + 반복되는 각 단어위치(포지셔널 값).. 을 하여,  
+Q, K, V 변환을 하여 **Attention 연산**을 한다. 이후에 임시 값은 소멸.  
+
+*정의하기*  
+임베딩 행렬 = embedding(vocab_size, emb_dim)  
+token_embedding 행렬: 전체 단어 사전, 벡터 값을 가짐  
+position_embedding 행렬: context_length 만큼 행을 가짐 → 매 새 context 마다 덮어쓰기  
+
+*forward 구현하기*  
+forward에선 "이미 산출된(무작위)" 단어들의 위치값과 고유값을 더한다: 무슨 의미가 있나?  
+초기엔 의미 無!.. 오차 점수 기반 학습하여 의미있는 값들로 변함 
+for문 같은 순차적 방식 No, Vectorization(백터화)로 한꺼번에 연산 진행   
+
+**간소한 trouble shooting**
+`token_extracted + position_extracted`로직에서 다음과 같은 에러 발생:  
+<span style="color:red">The size of tensor a (8) must match the size of tensor b..</span>  
+
+1. 두 3차원 배열의 각 차원 size가 매칭되지 않는다는 것으로 파악  
+2. 8(a)은 sequence_length이고 128(b)은 context_length로 추정  
+3. 차원 분석: 1차원(batch_size), 2차원(seq_len), 3차원(emb_dim)  
+4. 다음과 같이 수정: `positions = torch.arange(x.size(1))` → x의 두 번째 차원  
+
