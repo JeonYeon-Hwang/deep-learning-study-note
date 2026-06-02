@@ -60,3 +60,10 @@ conda activate llm-scratch
 pip install -r requirements.txt
 ```
 
+```
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+
+이후론..
+conda activate llm-scratch
+pip install -r requirements.txt
+```
