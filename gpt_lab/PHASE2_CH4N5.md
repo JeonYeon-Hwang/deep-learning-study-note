@@ -42,7 +42,7 @@ shortcut이란? → 역잔파 때 gradient가 소실되지 않도록: 통과前 
 
 **GPT Model**  
 `nn.Embedding(단어 총 갯수, 임베딩 차원)`: (어찌보면?) 2차원 행렬 생성기  
-구성 요소: 토큰/위치 임베딩 → 드롭아웃 → 트랜스포머 블록 × n개 → 마지막 정규화 → 출력 층  
+구성 요소: 토큰/위치 임베딩 → 드롭아웃 → 트랜스포머 블록 × n개 → last 정규화 → 출력층  
   
 pos_embeds 구성 방식:  
 ```
@@ -69,4 +69,42 @@ Train 시: Teacher Forcing.. 틀렸을 경우라도 강제로 답 넣고 진행
 <br>  
   
 ## Train  
+  
+Model을 훈련시키는 과정: Forward → Loss 계산 → Backward(gradient 생성) + optimize  
+cross_entropy_loss 계산 방식: logits(batch 모두 합치기) -비교- targets(정답지 일렬로)  
+  
+`with torch.no_grad()`: 미분용 추적 graph 생성 비활성.. 기본적으로 torch는 활성 상태  
+체크포인트 저장 기능: state를 저장.. model(W와 B), optimizer(M: 관성)을 각각 저장  
+<br>
 
+**Generate**
+예측 단어 점수판(logits)를 통해 실제 단어 생성 로직: 실제 학습(train)이 아닌 생성용임  
+temperature → 높을 수록 무작위성 증가, top_k → 점수 기준 상위 K개로 후보 한정  
+
+`torch.multinomial(확률판, 뽑는 갯수)`: 랜덤으로 돌아가나, 확률판 기준 영역을 설정  
+`torch.argmax(선택행렬, 해당행렬 차원, 차원유지 유무)`: 한 개를 max 기준 뽑음   
+<br>
+
+**train_model**  
+train_loss: 內 for 문 기준, 앞서 학습한 단어 기준 loss를 산정  
+val_loss: 內 for 문 기준, 새롭게 학습한 단어 기준 loss 산정  
+  
+대략적 함수 구성: 모델인 만큼 이 곳에 train을 총괄한다..    
+```
+for epoch 갯수 만큼 반복:
+
+    for 들어온 배치, 정답지 배치 in train_loader:
+        손실 점수 = calc_loss_batch(들어온 배치, 정답지 배치, ..)
+
+        gradient 청소 => 새 loss로 미분 진행 => 가중치 수정
+
+        if global_step이 점수 산출 주기에 도달하면?
+            train_loss 점수 산출
+            val_loss 점수 산출
+            => 그리고 이들을 출력한다
+
+        if global_step이 체크포인트 산출 주기에 도달하면?
+            torch.save({
+                key=value 형태의 저장 객체
+            }, 저장 경로)
+```
