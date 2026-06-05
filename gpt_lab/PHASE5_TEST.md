@@ -72,7 +72,7 @@ xychart-beta
     line [0.5167, 0.6803, 0.7317, 0.7410, 0.7343, 0.7477, 0.7437, 0.7383, 0.7447, 0.7463]
 ```
 
-**과적합 상태**가 발생하고 있음을 확인 가능하다  
+**과적합 상태**인가? .. 추정 중
 왜 과적합이 발생하나? → 과도한 파라미터 or 너무 많은 epochs or 데이터 부족  
 현재 train과 val의 그래프 방향이 다름: train의 지엽적인 특성을 패턴으로 인식함을 추정 가능  
   
@@ -147,7 +147,57 @@ n_batch: 묶음이 클 수록 대량 병렬 연산으로 속도가 증가하나,
 유효 조합: (개연성, 꽝), (시간, 순삭) → 부정 맥락 파악 가능, 긍정 표현 파악 가능  
   
 → 이로 인해 128차원이 유의미한 정보로 채워지지 못하고 사소한 디테일을 채움(노이즈)  
+<br>
 
+**N차: 테스트**  
+그래프 결과(loss 기준):  
+```mermaid
+---
+config:
+  themeVariables:
+    xyChart:
+      plotColorPalette: "#555555, #0066FF"
+---
+xychart-beta
+    title "⬜ Train Loss  vs  🟦 Val Loss"
+    x-axis [Ep 1, Ep 2, Ep 3, Ep 4, Ep 5, Ep 6, Ep 7]
+    y-axis "Loss" 0.35 --> 0.75
+    line [0.706, 0.608, 0.489, 0.446, 0.420, 0.401, 0.386]
+    line [0.687, 0.518, 0.465, 0.459, 0.439, 0.439, 0.436]
+```
+<br>  
 
+그래프 결과(accuracy 기준):  
+```mermaid
+---
+config:
+  themeVariables:
+    xyChart:
+      plotColorPalette: "#555555, #0066FF"
+---
+xychart-beta
+    title "⬜ Train Acc vs 🟦 Val Acc"
+    x-axis [Ep 1, Ep 2, Ep 3, Ep 4, Ep 5, Ep 6, Ep 7]
+    y-axis "Accuracy" 0.45 --> 0.85
+    line [0.507, 0.658, 0.760, 0.790, 0.806, 0.817, 0.826]
+    line [0.584, 0.725, 0.762, 0.779, 0.794, 0.796, 0.793]
+```
 
+과적합 상태가 개선되었음을 확인이 가능하다.  
+조정한 값든은 다음과 같다:  
+```
+A. 실험 환경 설정: corpus_size = 400000
+
+1. 학습용 데이터: train_data_size = 60000
+2. 시험용 데이터: val_data_size = 3000
+3. 어휘 사전 크기: n_vacab = 2000
+
+a. 차원 수: emb_dims = 128
+b. 계층 수: layer_num = 2
+c. 드롭 비율: n_droprate = 0.3
+
+x. 회차 횟수: epoch_num = 7
+y. 묶음 양: n_batch = 256
+z. 보조 cpu 프로세서: n_workers = 2
+```
 
